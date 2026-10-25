@@ -1,0 +1,12 @@
+.env
+.env.local
+*.log
+.DS_Store
+node_modules/
+supabase/.temp/
+supabase/.branches/
+
+# Go / calendar-sync — never commit credentials or the built binary
+service-account*.json
+calendar-sync/service-account.json
+calendar-sync/calendar-sync

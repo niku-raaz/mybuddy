@@ -1,0 +1,87 @@
+openapi: 3.1.0
+info:
+  title: mybuddy memory API
+  description: Save and recall durable memories about the user.
+  version: 1.0.0
+servers:
+  - url: https://dvwrzxjxwuvhapxancpt.supabase.co/functions/v1
+paths:
+  /save-memory:
+    post:
+      operationId: saveMemory
+      summary: Save a durable fact, preference, goal, event, or project about the user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [type, content]
+              properties:
+                type:
+                  type: string
+                  enum: [fact, preference, goal, event, project]
+                  description: The kind of memory.
+                content:
+                  type: string
+                  description: The memory itself, written as a clear standalone statement.
+                confidence:
+                  type: number
+                  description: 0..1 confidence this is true and durable. Default 0.8.
+                source:
+                  type: string
+                  description: Where it came from. Default "chatgpt".
+      responses:
+        "200":
+          description: Saved.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  memory:
+                    type: object
+  /recall-memory:
+    post:
+      operationId: recallMemory
+      summary: Recall the most relevant memories about the user for a query.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query]
+              properties:
+                query:
+                  type: string
+                  description: What you want to know about the user.
+                limit:
+                  type: integer
+                  description: Max memories to return (1-25). Default 8.
+                type:
+                  type: string
+                  enum: [fact, preference, goal, event, project]
+                  description: Optional filter to one memory type.
+      responses:
+        "200":
+          description: Matching memories, most relevant first.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  memories:
+                    type: array
+                    items:
+                      type: object
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+security:
+  - ApiKeyAuth: []

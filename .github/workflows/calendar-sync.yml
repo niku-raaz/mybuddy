@@ -1,0 +1,33 @@
+name: calendar-sync
+
+# Runs the Supabase -> Google Calendar sync on a schedule (and on-demand).
+on:
+  schedule:
+    # GitHub cron is UTC. 01:30 UTC = 07:00 IST.
+    - cron: "30 1 * * *"
+  workflow_dispatch: {}   # adds a "Run workflow" button for manual runs
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: calendar-sync
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      - name: Write service account key from secret
+        env:
+          SERVICE_ACCOUNT_JSON: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+        run: printf '%s' "$SERVICE_ACCOUNT_JSON" > service-account.json
+
+      - name: Run sync
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SERVICE_ACCOUNT_FILE: ./service-account.json
+          CALENDAR_ID: ${{ secrets.CALENDAR_ID }}
+        run: go run .
